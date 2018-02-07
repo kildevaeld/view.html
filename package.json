@@ -3,6 +3,7 @@
   "version": "0.0.4",
   "description": "",
   "main": "./lib/index.js",
+  "browser": "./dist/view.html.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -27,7 +28,14 @@
     "ts-loader": "^2.1.0",
     "tslib": "^1.7.1",
     "typescript": "^2.7.1",
-    "webpack": "^2.6.1"
+    "webpack": "^2.6.1",
+    "@babel/core": "^7.0.0-beta.39",
+    "babel-preset-env": "^2.0.0-alpha.20",
+    "rollup": "^0.55.3",
+    "rollup-plugin-babel": "^4.0.0-beta.0",
+    "rollup-plugin-commonjs": "^8.3.0",
+    "rollup-plugin-node-resolve": "^3.0.2",
+    "rollup-plugin-typescript": "^0.8.1"
   },
   "typings": "./lib/index.d.ts"
 }
