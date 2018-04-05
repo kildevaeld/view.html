@@ -26,7 +26,7 @@ export function getValue(el: HTMLElement, coerce: boolean = false) {
         let type = input.type;
         switch (type) {
             case "number":
-                return coerce ? 'valueAsNumber' in input ? input.valueAsNumber : parseInt(input.value) : input.value;
+                return coerce ? ('valueAsNumber' in input) ? input.valueAsNumber : parseInt(input.value) : input.value;
             case "date":
                 return coerce ? 'valueAsDate' in input ? input.valueAsDate : new Date(input.value) : input.value;
             default: return input.value;
@@ -187,7 +187,7 @@ export class Html implements Iterable<Element> {
 
     hasClass(str: string): boolean {
 
-        return this._elements.reduce<boolean>((_, c) => {
+        return this._elements.reduce<boolean>((p, c) => {
             return c.classList.contains(str);
         }, false);
     }
@@ -309,7 +309,6 @@ export class Html implements Iterable<Element> {
     }
 
     forEach(fn: (elm: HTMLElement, index: number) => void): Html {
-
         this._elements.forEach(fn);
         return this;
     }
@@ -361,6 +360,7 @@ export class Html implements Iterable<Element> {
             if (!domEvents.get(el)!.length) domEvents.delete(el);
         });
     }
+
 
     // Iterator
     [Symbol.iterator]() {
