@@ -24,13 +24,14 @@ export function getValue(el: HTMLElement, coerce: boolean = false) {
     } else if (isInput) {
         let input = (el as HTMLInputElement);
         let type = input.type;
-        switch (type) {
-            case "number":
-                return coerce ? ('valueAsNumber' in input) ? input.valueAsNumber : parseInt(input.value) : input.value;
-            case "date":
-                return coerce ? 'valueAsDate' in input ? input.valueAsDate : new Date(input.value) : input.value;
-            default: return input.value;
-        }
+        // switch (type) {
+        //     case "number":
+        //         return coerce ? ('valueAsNumber' in input) ? input.valueAsNumber : parseInt(input.value) : input.value;
+        //     case "date":
+        //         return coerce ? 'valueAsDate' in input ? input.valueAsDate : new Date(input.value) : input.value;
+        //     default: return input.value;
+        // }
+        return input.value;
     }
 
     return el.textContent;
