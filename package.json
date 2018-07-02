@@ -8,8 +8,11 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "node node_modules/.bin/tsc; node node_modules/.bin/rollup -c"
   },
-  "author": "",
-  "license": "ISC",
+  "author": {
+    "email": "rasmuskildevaed@gmail.com",
+    "name": "Rasmus Kildevæld"
+  },
+  "license": "MIT",
   "dependencies": {
     "@viewjs/view": "^2.4.0",
     "@viewjs/data": "^1.0.0"
