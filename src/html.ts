@@ -1,5 +1,4 @@
-import { isObject } from 'view';
-
+import { isObject } from '@viewjs/utils';
 
 /**
  * Get value from HTML Elemement

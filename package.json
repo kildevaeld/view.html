@@ -14,8 +14,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@viewjs/view": "^2.4.0",
-    "@viewjs/data": "^1.0.0"
+    "@viewjs/utils": "^1.0.0"
   },
   "devDependencies": {
     "@types/debug": "0.0.29",

@@ -12,13 +12,12 @@ module.exports = [
         output: {
             file: pkg.browser,
             format: 'umd',
-            name: 'view.html',
+            name: 'viewjs.html',
             globals: {
-                view: 'view',
-                'view.data': 'view.data'
+                '@viewjs/utils': 'viewjs.utils'
             }
         },
-        external: ["view", "view.data"],
+        external: ["@viewjs/utils"],
         plugins: [
             typescript({
                 typescript: require('typescript')
