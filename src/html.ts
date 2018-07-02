@@ -186,9 +186,9 @@ export class Html implements Iterable<Element> {
     }
 
     hasClass(str: string): boolean {
-
+        let split = str.split(' ');
         return this._elements.reduce<boolean>((p, c) => {
-            return c.classList.contains(str);
+            return split.reduce<boolean>((pp, cc) => c.classList.contains(cc), false)
         }, false);
     }
 

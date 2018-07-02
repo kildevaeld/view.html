@@ -389,8 +389,11 @@
     }, {
       key: "hasClass",
       value: function hasClass(str) {
+        var split = str.split(' ');
         return this._elements.reduce(function (p, c) {
-          return c.classList.contains(str);
+          return split.reduce(function (pp, cc) {
+            return c.classList.contains(cc);
+          }, false);
         }, false);
       }
     }, {

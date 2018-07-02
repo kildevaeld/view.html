@@ -1,5 +1,5 @@
 {
-  "name": "view.html",
+  "name": "@viewjs/html",
   "version": "0.2.2",
   "description": "",
   "main": "./lib/index.js",
@@ -11,8 +11,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "view": "github:kildevaeld/view#development",
-    "view.data": "github:kildevaeld/view.data"
+    "@viewjs/view": "^2.4.0",
+    "@viewjs/data": "^1.0.0"
   },
   "devDependencies": {
     "@types/debug": "0.0.29",

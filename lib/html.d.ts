@@ -6,10 +6,7 @@
  * @param {boolean} [coerce=false]
  * @returns
  */
-export declare function getValue(el: HTMLElement, coerce?: boolean): string | number | boolean | Date | {
-    value: string;
-    text: string;
-} | null;
+export declare function getValue(el: HTMLElement, coerce?: boolean): any;
 /**
  * Set value on an HTMLElmenet
  *
