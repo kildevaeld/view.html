@@ -41,59 +41,6 @@ function _defineProperty(obj, key, value) {
   return obj;
 }
 
-function _get(object, property, receiver) {
-  if (object === null) object = Function.prototype;
-  var desc = Object.getOwnPropertyDescriptor(object, property);
-
-  if (desc === undefined) {
-    var parent = Object.getPrototypeOf(object);
-
-    if (parent === null) {
-      return undefined;
-    } else {
-      return _get(parent, property, receiver);
-    }
-  } else if ("value" in desc) {
-    return desc.value;
-  } else {
-    var getter = desc.get;
-
-    if (getter === undefined) {
-      return undefined;
-    }
-
-    return getter.call(receiver);
-  }
-}
-
-function _inherits(subClass, superClass) {
-  if (typeof superClass !== "function" && superClass !== null) {
-    throw new TypeError("Super expression must either be null or a function");
-  }
-
-  subClass.prototype = Object.create(superClass && superClass.prototype, {
-    constructor: {
-      value: subClass,
-      enumerable: false,
-      writable: true,
-      configurable: true
-    }
-  });
-  if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
-}
-
-function _possibleConstructorReturn(self, call) {
-  if (call && (typeof call === "object" || typeof call === "function")) {
-    return call;
-  }
-
-  if (self === void 0) {
-    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
-  }
-
-  return self;
-}
-
 function _toConsumableArray(arr) {
   if (Array.isArray(arr)) {
     for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
@@ -102,83 +49,6 @@ function _toConsumableArray(arr) {
   } else {
     return Array.from(arr);
   }
-}
-
-(function (BindingDirection) {
-  BindingDirection[BindingDirection["ToView"] = 0] = "ToView";
-  BindingDirection[BindingDirection["FromView"] = 1] = "FromView";
-  BindingDirection[BindingDirection["Both"] = 2] = "Both";
-})(exports.BindingDirection || (exports.BindingDirection = {}));
-
-
-
-function withBindings(Base, bindings) {
-  return (
-    /*#__PURE__*/
-    function (_Base) {
-      _inherits(_class, _Base);
-
-      function _class() {
-        var _ref;
-
-        var _this;
-
-        _classCallCheck(this, _class);
-
-        for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-          args[_key] = arguments[_key];
-        }
-
-        _this = _possibleConstructorReturn(this, (_ref = _class.__proto__ || Object.getPrototypeOf(_class)).call.apply(_ref, [this].concat(args)));
-        if (bindings) _this.bindings = bindings;
-        return _this;
-      } // Overload
-
-
-      _createClass(_class, [{
-        key: "setModel",
-        value: function setModel(model) {
-          this._undelegateModelBindings(this.model);
-
-          this.setModel(model);
-
-          this._delegateModelBindings(model);
-
-          return this;
-        }
-      }, {
-        key: "render",
-        value: function render() {
-          this._undelegateModelBindings();
-
-          _get(_class.prototype.__proto__ || Object.getPrototypeOf(_class.prototype), "render", this).call(this);
-
-          this._delegateModelBindings();
-
-          return this;
-        }
-      }, {
-        key: "_delegateModelBindings",
-        value: function _delegateModelBindings(model) {
-          if (!model || !this.bindings) return;
-        }
-      }, {
-        key: "_undelegateModelBindings",
-        value: function _undelegateModelBindings(model) {
-          if (!model || !this.bindings) return;
-        }
-      }, {
-        key: "destroy",
-        value: function destroy() {
-          this._undelegateModelBindings();
-
-          return _get(_class.prototype.__proto__ || Object.getPrototypeOf(_class.prototype), "destroy", this).call(this);
-        }
-      }]);
-
-      return _class;
-    }(Base)
-  );
 }
 
 /**
@@ -615,7 +485,8 @@ function html(query, context) {
   return Html.query(query, context);
 }
 
-exports.withBindings = withBindings;
+//export * from './bindable-view';
+
 exports.getValue = getValue;
 exports.setValue = setValue;
 exports.html = html;
