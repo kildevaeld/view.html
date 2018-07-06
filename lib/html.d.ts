@@ -1,3 +1,5 @@
+import { CSSStyleDeclarationOptions, DelegateEvent } from './types';
+import { DomEventHandler } from './events';
 /**
  * Get value from HTML Elemement
  *
@@ -35,7 +37,7 @@ export declare class Html implements Iterable<Element> {
     toggleClass(str: string): Html;
     attr(key: string, value: string): Html;
     attr(key: string): string;
-    attr(key: Object): Html;
+    attr(key: object): Html;
     removeAttr(key: string): Html;
     text(): string;
     text(str: string): Html;
@@ -43,18 +45,20 @@ export declare class Html implements Iterable<Element> {
     html(html: string): Html;
     val(): string;
     val(val: any): Html;
-    css(attr: string | any, value?: any): Html;
+    css(attr: string | CSSStyleDeclarationOptions, value?: any): Html;
     parent(): Html;
     remove(): Html;
     clone(): Html;
     find(str: string): Html;
     map<T>(fn: (elm: HTMLElement, index?: number) => T): T[];
     forEach(fn: (elm: HTMLElement, index: number) => void): Html;
-    on(name: string, callback: (e: Event) => void, useCap?: boolean): Html;
-    once(name: string, callback: (e: Event) => void, useCap?: boolean): Html;
-    off(name?: string, callback?: (e: Event) => void): Html;
+    on(name: string, callback: DomEventHandler, useCap?: boolean | EventListenerOptions, ctx?: any): Html;
+    once(name: string, callback: (e: Event) => void, useCap?: boolean | EventListenerOptions, ctx?: any): Html;
+    off(name?: string, callback?: (e: Event) => void, ctx?: any): Html;
+    delegate<E extends Element>(selector: string, eventName: string, listener?: (e: DelegateEvent<E>) => void, ctx?: any): Html;
+    undelegate(selector: string, eventName?: string | Function, listener?: Function): Html;
     [Symbol.iterator](): {
-        next(): IteratorResult<Element>;
+        next(): IteratorResult<HTMLElement>;
     };
 }
 export declare function html(query: string | HTMLElement | Element | Html | ArrayLike<Html> | ArrayLike<Node>, context?: string | HTMLElement | ArrayLike<Node> | Element): Html;

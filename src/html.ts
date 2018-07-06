@@ -1,4 +1,17 @@
-import { isObject } from '@viewjs/utils';
+import { isObject, isString, isElement, slice, matches } from '@viewjs/utils';
+import { CSSStyleDeclarationOptions, DelegateEvent, unbubblebles } from './types';
+import { addEventListener, removeEventListener, DomEventHandler } from './events';
+
+interface DomDelegateEvent {
+    event: string;
+    listener: DomEventHandler;
+    handler: any;
+    selector: string;
+}
+
+
+const domDelegateEvents: Map<EventTarget, DomDelegateEvent> = new Map();
+
 
 /**
  * Get value from HTML Elemement
@@ -21,15 +34,7 @@ export function getValue(el: HTMLElement, coerce: boolean = false) {
         let option = (el as HTMLSelectElement).options[(el as HTMLSelectElement).selectedIndex];
         return { value: option.value, text: option.innerText };
     } else if (isInput) {
-        let input = (el as HTMLInputElement);
-        let type = input.type;
-        // switch (type) {
-        //     case "number":
-        //         return coerce ? ('valueAsNumber' in input) ? input.valueAsNumber : parseInt(input.value) : input.value;
-        //     case "date":
-        //         return coerce ? 'valueAsDate' in input ? input.valueAsDate : new Date(input.value) : input.value;
-        //     default: return input.value;
-        // }
+        const input = (el as HTMLInputElement)
         return input.value;
     }
 
@@ -75,8 +80,7 @@ export function setValue(el: HTMLElement, value?: any) {
 }
 
 
-const singleTag = /^<([a-z][^\/\0>:\x20\t\r\n\f]*)[\x20\t\r\n\f]*\/?>(?:<\/\1>|)$/i,
-    slice = Array.prototype.slice;
+const singleTag = /^<([a-z][^\/\0>:\x20\t\r\n\f]*)[\x20\t\r\n\f]*\/?>(?:<\/\1>|)$/i;
 
 function parseHTML(html: string): HTMLElement {
     let parsed = singleTag.exec(html);
@@ -95,12 +99,12 @@ const domEvents: Map<Element, { event: string; callback: (e: Event) => void }[]>
 export class Html implements Iterable<Element> {
 
     static query(query: string | HTMLElement | Element | Html | ArrayLike<Html> | ArrayLike<Node>, context?: string | HTMLElement | ArrayLike<Node> | Element): Html {
-        if (typeof context === 'string') {
+        if (isString(context)) {
             context = document.querySelectorAll(<string>context);
         }
         let html: Html;
         let els: HTMLElement[] | undefined;
-        if (typeof query === 'string') {
+        if (isString(query)) {
 
             if (query.length > 0 && query[0] === '<' && query[query.length - 1] === ">"
                 && query.length >= 3) {
@@ -109,18 +113,18 @@ export class Html implements Iterable<Element> {
 
             if (context) {
                 if (context instanceof HTMLElement) {
-                    els = slice.call(context.querySelectorAll(query));
+                    els = slice(context.querySelectorAll(query));
                 } else {
                     html = new Html(slice.call(context));
                     return html.find(query);
                 }
             } else {
-                els = slice.call(document.querySelectorAll(query));
+                els = slice(document.querySelectorAll(query));
             }
         } else if (query && query instanceof Element) {
             els = [query as HTMLElement];
         } else if (query && query instanceof NodeList) {
-            els = slice.call(query);
+            els = slice(query) as any;
         } else if (query && Array.isArray(query)) {
             els = [];
             for (let i = 0, ii = query.length; i < ii; i++) {
@@ -208,8 +212,8 @@ export class Html implements Iterable<Element> {
 
     attr(key: string, value: string): Html;
     attr(key: string): string;
-    attr(key: Object): Html;
-    attr(key: string | Object, value?: any): any {
+    attr(key: object): Html;
+    attr(key: string | object, value?: any): any {
         let attr: any;
         if (typeof key === 'string' && value) {
             attr = { [key]: value };
@@ -258,18 +262,20 @@ export class Html implements Iterable<Element> {
         return this.forEach(e => setValue(e, val));
     }
 
-    css(attr: string | any, value?: any) {
-        if (arguments.length === 2) {
+
+    css(attr: string | CSSStyleDeclarationOptions, value?: any) {
+        if (isString(attr)) {
             return this.forEach(e => {
-                if (attr in e.style) e.style[attr] = String(value);
+                if (attr in e.style) e.style[attr as any] = String(value);
             });
         } else {
             return this.forEach(e => {
                 for (let k in attr) {
-                    if (k in e.style) e.style[k as any] = String(attr[k]);
+                    if (k in e.style) (e.style as any)[k] = attr[k] || null;
                 }
             });
         }
+
     }
 
     parent(): Html {
@@ -286,6 +292,12 @@ export class Html implements Iterable<Element> {
         return this.forEach(e => {
             if (e.parentElement) e.parentElement.removeChild(e);
         })
+    }
+
+    focus() {
+        return this.forEach(e => {
+            e.focus();
+        });
     }
 
     clone(): Html {
@@ -308,77 +320,108 @@ export class Html implements Iterable<Element> {
         return out;
     }
 
+    filter(predicate: (elm: HTMLElement, index?: number) => boolean) {
+        let out: HTMLElement[] = new Array(this.length)
+        this.forEach((e, i) => {
+            if (predicate(e, i))
+                out.push(e);
+        });
+        return Html.query(out);
+    }
+
     forEach(fn: (elm: HTMLElement, index: number) => void): Html {
         this._elements.forEach(fn);
         return this;
     }
 
-    on(name: string, callback: (e: Event) => void, useCap?: boolean) {
+    on(name: string, callback: DomEventHandler, useCap?: boolean | EventListenerOptions, ctx?: any) {
         return this.forEach(e => {
-            let entries = domEvents.get(e);
-            if (!entries) {
-                entries = [];
-                domEvents.set(e, entries);
-            }
-            e.addEventListener(name, callback, useCap);
-            entries.push({
-                event: name,
-                callback: callback
-            });
-
+            addEventListener(e, name, callback, useCap, ctx);
         });
     }
 
-    once(name: string, callback: (e: Event) => void, useCap?: boolean) {
-        return this.on(name, (e) => {
-            callback(e);
-            setTimeout(() => this.off(name, callback));
-        }, useCap);
+    once(name: string, callback: (e: Event) => void, useCap?: boolean | EventListenerOptions, ctx?: any) {
+        return this.forEach(e => {
+            addEventListener(e, name, callback, useCap, ctx, true);
+        })
     }
 
-    off(name?: string, callback?: (e: Event) => void) {
-        if (!name) {
-            return this.forEach(el => {
-                let entries = domEvents.get(el);
-                if (entries) {
-                    entries.forEach(e => {
-                        el.removeEventListener(e.event, e.callback);
-                    });
-                    domEvents.delete(el);
-                }
-            });
-        }
+    off(name?: string, callback?: (e: Event) => void, ctx?: any) {
+        return this.forEach(e => {
+            removeEventListener(e, name, callback, ctx);
+        });
+    }
+
+    delegate<E extends Element>(selector: string, eventName: string, listener?: (e: DelegateEvent<E>) => void, ctx?: any) {
 
         return this.forEach(el => {
-            let entries = domEvents.get(el);
-            if (!entries) return;
-            entries.forEach((entry, index) => {
-                if (entry.event === name && (callback ? callback === entry.callback : true)) {
-                    domEvents.get(el)!.splice(index, 1);
+            let root = el;
+            let handler = selector ? function (e: DelegateEvent) {
+                let node = (e.target || e.srcElement) as Node | null;
+                // Already handled
+                if (e.delegateTarget) return;
+
+                for (; node && node != root; node = node!.parentNode) {
+                    if (node && matches((node as Element), selector as string)) {
+                        e.delegateTarget = node as any;
+                        listener!(e as any);
+                    }
                 }
-            });
-            if (!domEvents.get(el)!.length) domEvents.delete(el);
+            } : function (e: any) {
+                if (e.delegateTarget) return;
+                listener!(e);
+            };
+
+            let useCap = !!~unbubblebles.indexOf(eventName) && selector != null;
+            //debug('%s delegate event %s ', this, eventName);
+            el!.addEventListener(eventName, handler as any, useCap);
+
+            domDelegateEvents.set(el, { event: eventName, handler: handler as any, listener: listener as any, selector: selector });
+            //domDelegateEvents.push({ eventName: eventName, handler: handler, listener: listener, selector: selector });
+            return handler;
+        });
+
+
+
+    }
+
+    undelegate(selector: string, eventName?: string | Function, listener?: Function) {
+        return this.forEach(el => {
+
+            var item = domDelegateEvents.get(el);
+            if (!item) return;
+
+            var match = item.event === eventName &&
+                (listener ? item.listener === listener : true) &&
+                (selector ? item.selector === selector : true);
+
+            if (!match) return;
+
+            el!.removeEventListener(item.event, item.handler);
+
+            domDelegateEvents.delete(el);
+
         });
     }
 
-
-    // Iterator
+    // Iterator interface
     [Symbol.iterator]() {
 
         let pointer = 0;
         let components = this._elements;
         let len = components.length;
         return {
-            next(): IteratorResult<Element> {
+            next(): IteratorResult<HTMLElement> {
                 let done = pointer >= len;
                 return {
                     done: done,
                     value: done ? null : components[pointer++]
-                } as any
+                } as any;
             }
 
         }
     }
+
 }
 
 export function html(query: string | HTMLElement | Element | Html | ArrayLike<Html> | ArrayLike<Node>, context?: string | HTMLElement | ArrayLike<Node> | Element): Html {
