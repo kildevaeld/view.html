@@ -1,27 +1,6 @@
 import { CSSStyleDeclarationOptions, DelegateEvent } from './types';
 import { DomEventHandler } from './events';
-/**
- * Get value from HTML Elemement
- *
- * @export
- * @param {HTMLElement} el
- * @param {boolean} [coerce=false]
- * @returns
- */
-export declare function getValue(el: HTMLElement, coerce?: boolean): string | boolean | {
-    value: string;
-    text: string;
-} | null;
-/**
- * Set value on an HTMLElmenet
- *
- * @export
- * @param {HTMLElement} el
- * @param {*} [value]
- */
-export declare function setValue(el: HTMLElement, value?: any): void;
 export declare class Html implements Iterable<Element> {
-    static query(query: string | HTMLElement | Element | Html | ArrayLike<Html> | ArrayLike<Node>, context?: string | HTMLElement | ArrayLike<Node> | Element): Html;
     static removeAllEventListeners(): void;
     static _domEvents(): Map<Element, {
         event: string;
@@ -63,4 +42,3 @@ export declare class Html implements Iterable<Element> {
         next(): IteratorResult<HTMLElement>;
     };
 }
-export declare function html(query: string | HTMLElement | Element | Html | ArrayLike<Html> | ArrayLike<Node>, context?: string | HTMLElement | ArrayLike<Node> | Element): Html;

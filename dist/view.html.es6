@@ -1,4 +1,18 @@
-import { isObject, isString, slice, matches } from '@viewjs/utils';
+import { isString, slice, isElement, isObject, matches } from '@viewjs/utils';
+
+function _typeof(obj) {
+  if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
+    _typeof = function (obj) {
+      return typeof obj;
+    };
+  } else {
+    _typeof = function (obj) {
+      return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+    };
+  }
+
+  return _typeof(obj);
+}
 
 function _classCallCheck(instance, Constructor) {
   if (!(instance instanceof Constructor)) {
@@ -102,7 +116,6 @@ function removeEventListener(target, event, callback, ctx) {
   if (!entries.length) domEvents.delete(target);else domEvents.set(target, entries);
 }
 
-var domDelegateEvents = new Map();
 /**
  * Get value from HTML Elemement
  *
@@ -179,15 +192,48 @@ function parseHTML(html) {
   var parsed = singleTag.exec(html);
 
   if (parsed) {
-    return document.createElement(parsed[0]);
+    return [document.createElement(parsed[1])];
   }
 
   var div = document.createElement('div');
   div.innerHTML = html;
-  var element = div.firstChild;
-  return element;
+  return slice(div.children);
 }
 
+function isArrayLike(item) {
+  return Array.isArray(item) || !!item && _typeof(item) === "object" && typeof item.length === "number" && (item.length === 0 || item.length > 0 && item.length - 1 in item);
+}
+
+function normalize(query, context) {
+  var out = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
+
+  if (isString(context)) {
+    var q = document.querySelector(context);
+    if (!q) throw new ReferenceError("could not resolve context " + context);
+    context = q;
+  }
+
+  if (isString(query)) {
+    if (query.length > 0 && query[0] === '<' && query[query.length - 1] === ">" && query.length >= 3) {
+      out.push.apply(out, _toConsumableArray(parseHTML(query)));
+    } else {
+      var o = (context ? context : document).querySelectorAll(query);
+      out.push.apply(out, _toConsumableArray(o));
+    }
+  } else if (isElement(query)) {
+    out.push(query);
+  } else if (query && query instanceof Html) {
+    out.push.apply(out, _toConsumableArray(query));
+  } else if (isArrayLike(query)) {
+    for (var i = 0, ii = query.length; i < ii; i++) {
+      normalize(query[i], context, out);
+    }
+  }
+
+  return out;
+}
+
+var domDelegateEvents = new Map();
 var domEvents$1 = new Map();
 
 var Html =
@@ -199,53 +245,6 @@ function () {
       return this._elements.length;
     }
   }], [{
-    key: "query",
-    value: function query(_query, context) {
-      if (isString(context)) {
-        context = document.querySelectorAll(context);
-      }
-
-      var html;
-      var els;
-
-      if (isString(_query)) {
-        if (_query.length > 0 && _query[0] === '<' && _query[_query.length - 1] === ">" && _query.length >= 3) {
-          return new Html([parseHTML(_query)]);
-        }
-
-        if (context) {
-          if (context instanceof HTMLElement) {
-            els = slice(context.querySelectorAll(_query));
-          } else {
-            html = new Html(slice.call(context));
-            return html.find(_query);
-          }
-        } else {
-          els = slice(document.querySelectorAll(_query));
-        }
-      } else if (_query && _query instanceof Element) {
-        els = [_query];
-      } else if (_query && _query instanceof NodeList) {
-        els = slice(_query);
-      } else if (_query && Array.isArray(_query)) {
-        els = [];
-
-        for (var i = 0, ii = _query.length; i < ii; i++) {
-          var e = _query[i];
-
-          if (e instanceof Html) {
-            els = els.concat(e._elements);
-          } else if (e instanceof Node) {
-            els.push(e);
-          }
-        }
-      } else if (_query && _query instanceof Html) {
-        return _query;
-      }
-
-      return new Html(els);
-    }
-  }, {
     key: "removeAllEventListeners",
     value: function removeAllEventListeners() {
       domEvents$1.forEach(function (entries, el) {
@@ -432,7 +431,7 @@ function () {
     value: function find(str) {
       var out = [];
       this.forEach(function (e) {
-        out = out.concat(slice.call(e.querySelectorAll(str)));
+        out = out.concat(slice(e.querySelectorAll(str)));
       });
       return new Html(out);
     }
@@ -452,7 +451,7 @@ function () {
       this.forEach(function (e, i) {
         if (predicate(e, i)) out.push(e);
       });
-      return Html.query(out);
+      return new Html(out);
     }
   }, {
     key: "forEach",
@@ -550,7 +549,7 @@ function () {
 }();
 
 function html(query, context) {
-  return Html.query(query, context);
+  return new Html(normalize(query, context));
 }
 
-export { getValue, setValue, html, Html, unbubblebles, addEventListener, removeEventListener };
+export { html, Html, unbubblebles, addEventListener, removeEventListener, getValue, setValue, normalize };

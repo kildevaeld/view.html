@@ -1,6 +1,7 @@
 import { isObject, isString, isElement, slice, matches } from '@viewjs/utils';
 import { CSSStyleDeclarationOptions, DelegateEvent, unbubblebles } from './types';
 import { addEventListener, removeEventListener, DomEventHandler } from './events';
+import { getValue, setValue } from './utils';
 
 interface DomDelegateEvent {
     event: string;
@@ -13,134 +14,10 @@ interface DomDelegateEvent {
 const domDelegateEvents: Map<EventTarget, DomDelegateEvent> = new Map();
 
 
-/**
- * Get value from HTML Elemement
- * 
- * @export
- * @param {HTMLElement} el 
- * @param {boolean} [coerce=false] 
- * @returns 
- */
-export function getValue(el: HTMLElement, coerce: boolean = false) {
-    const tagName = el.tagName.toLocaleLowerCase(),
-        type = (<any>el).type,
-        isInput = tagName, isCheckbox = /checkbox/.test(type),
-        isSelect = /select/.test(el.nodeName);
-
-    if (isCheckbox) {
-        return Boolean((el as HTMLInputElement).checked);
-    } else if (isSelect) {
-        if (!coerce) return (el as HTMLInputElement).value || '';
-        let option = (el as HTMLSelectElement).options[(el as HTMLSelectElement).selectedIndex];
-        return { value: option.value, text: option.innerText };
-    } else if (isInput) {
-        const input = (el as HTMLInputElement)
-        return input.value;
-    }
-
-    return el.textContent;
-
-}
-
-/**
- * Set value on an HTMLElmenet
- * 
- * @export
- * @param {HTMLElement} el 
- * @param {*} [value] 
- */
-export function setValue(el: HTMLElement, value?: any) {
-    const tagName = el.tagName.toLocaleLowerCase(),
-        type = (<any>el).type,
-        isInput = tagName, isCheckbox = /checkbox/.test(type),
-        isRadio = /radio/.test(type),
-        isRadioOrCheckbox = isRadio || isCheckbox,
-        isSelect = /select/.test(el.nodeName);
-
-    if (value == null) {
-        value = "";
-    }
-
-    if (isRadioOrCheckbox) {
-        if (isRadio) {
-            if (String(value) === String((<any>el).value)) {
-                (el as HTMLInputElement).checked = true;
-            }
-        } else {
-            (el as HTMLInputElement).checked = value;
-        }
-    } else if (String(value) !== getValue(el)) {
-        if (isInput || isSelect) {
-            (el as HTMLInputElement).value = value;
-        } else {
-            el.innerHTML = value
-        }
-    }
-
-}
-
-
-const singleTag = /^<([a-z][^\/\0>:\x20\t\r\n\f]*)[\x20\t\r\n\f]*\/?>(?:<\/\1>|)$/i;
-
-function parseHTML(html: string): HTMLElement {
-    let parsed = singleTag.exec(html);
-    if (parsed) {
-        return document.createElement(parsed[0]);
-    }
-    var div = document.createElement('div');
-    div.innerHTML = html;
-    var element = div.firstChild;
-    return element as HTMLElement;
-}
-
 const domEvents: Map<Element, { event: string; callback: (e: Event) => void }[]> = new Map();
 
 
 export class Html implements Iterable<Element> {
-
-    static query(query: string | HTMLElement | Element | Html | ArrayLike<Html> | ArrayLike<Node>, context?: string | HTMLElement | ArrayLike<Node> | Element): Html {
-        if (isString(context)) {
-            context = document.querySelectorAll(<string>context);
-        }
-        let html: Html;
-        let els: HTMLElement[] | undefined;
-        if (isString(query)) {
-
-            if (query.length > 0 && query[0] === '<' && query[query.length - 1] === ">"
-                && query.length >= 3) {
-                return new Html([parseHTML(query)]);
-            }
-
-            if (context) {
-                if (context instanceof HTMLElement) {
-                    els = slice(context.querySelectorAll(query));
-                } else {
-                    html = new Html(slice.call(context));
-                    return html.find(query);
-                }
-            } else {
-                els = slice(document.querySelectorAll(query));
-            }
-        } else if (query && query instanceof Element) {
-            els = [query as HTMLElement];
-        } else if (query && query instanceof NodeList) {
-            els = slice(query) as any;
-        } else if (query && Array.isArray(query)) {
-            els = [];
-            for (let i = 0, ii = query.length; i < ii; i++) {
-                let e = query[i];
-                if (e instanceof Html) {
-                    els = els.concat(e._elements);
-                } else if (e instanceof Node) {
-                    els.push(e as HTMLElement);
-                }
-            }
-        } else if (query && query instanceof Html) {
-            return query;
-        }
-
-        return new Html(els);
-    }
 
     static removeAllEventListeners() {
 
@@ -300,6 +177,7 @@ export class Html implements Iterable<Element> {
         });
     }
 
+
     clone(): Html {
         return new Html(this.map(m => m.cloneNode() as HTMLElement))
     }
@@ -307,7 +185,7 @@ export class Html implements Iterable<Element> {
     find(str: string): Html {
         var out: any = [];
         this.forEach(e => {
-            out = out.concat(slice.call(e.querySelectorAll(str)));
+            out = out.concat(slice(e.querySelectorAll(str)));
         });
         return new Html(out);
     }
@@ -326,7 +204,7 @@ export class Html implements Iterable<Element> {
             if (predicate(e, i))
                 out.push(e);
         });
-        return Html.query(out);
+        return new Html(out);
     }
 
     forEach(fn: (elm: HTMLElement, index: number) => void): Html {
@@ -424,6 +302,3 @@ export class Html implements Iterable<Element> {
 
 }
 
-export function html(query: string | HTMLElement | Element | Html | ArrayLike<Html> | ArrayLike<Node>, context?: string | HTMLElement | ArrayLike<Node> | Element): Html {
-    return Html.query(query, context);
-}
