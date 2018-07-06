@@ -4,6 +4,7 @@
   "description": "",
   "main": "./lib/index.js",
   "browser": "./dist/view.html.js",
+  "module": "./dist/view.html.es6",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "node node_modules/.bin/tsc; node node_modules/.bin/rollup -c"

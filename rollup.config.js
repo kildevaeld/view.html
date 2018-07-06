@@ -9,21 +9,25 @@ module.exports = [
     // browser-friendly UMD build
     {
         input: './src/index.ts',
-        output: {
+        output: [{
             file: pkg.browser,
             format: 'umd',
             name: 'viewjs.html',
             globals: {
                 '@viewjs/utils': 'viewjs.utils'
             }
-        },
+        }, {
+            file: pkg.module,
+            format: 'es',
+        }],
         external: ["@viewjs/utils"],
         plugins: [
             typescript({
-                typescript: require('typescript')
+                typescript: require('typescript'),
+                module: 'es2015'
             }),
-            resolve(),
-            commonjs(),
+            //resolve(),
+            //commonjs(),
             babel({
                 exclude: ['node_modules/**']
             })

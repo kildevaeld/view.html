@@ -1,8 +1,4 @@
-(function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('@viewjs/utils')) :
-	typeof define === 'function' && define.amd ? define(['exports', '@viewjs/utils'], factory) :
-	(factory((global.viewjs = global.viewjs || {}, global.viewjs.html = {}),global.viewjs.utils));
-}(this, (function (exports,utils) { 'use strict';
+import { isObject, isString, slice, matches } from '@viewjs/utils';
 
 function _classCallCheck(instance, Constructor) {
   if (!(instance instanceof Constructor)) {
@@ -205,32 +201,32 @@ function () {
   }], [{
     key: "query",
     value: function query(_query, context) {
-      if (utils.isString(context)) {
+      if (isString(context)) {
         context = document.querySelectorAll(context);
       }
 
       var html;
       var els;
 
-      if (utils.isString(_query)) {
+      if (isString(_query)) {
         if (_query.length > 0 && _query[0] === '<' && _query[_query.length - 1] === ">" && _query.length >= 3) {
           return new Html([parseHTML(_query)]);
         }
 
         if (context) {
           if (context instanceof HTMLElement) {
-            els = utils.slice(context.querySelectorAll(_query));
+            els = slice(context.querySelectorAll(_query));
           } else {
-            html = new Html(utils.slice.call(context));
+            html = new Html(slice.call(context));
             return html.find(_query);
           }
         } else {
-          els = utils.slice(document.querySelectorAll(_query));
+          els = slice(document.querySelectorAll(_query));
         }
       } else if (_query && _query instanceof Element) {
         els = [_query];
       } else if (_query && _query instanceof NodeList) {
-        els = utils.slice(_query);
+        els = slice(_query);
       } else if (_query && Array.isArray(_query)) {
         els = [];
 
@@ -334,7 +330,7 @@ function () {
         attr = _defineProperty({}, key, value);
       } else if (typeof key == 'string') {
         if (this.length) return this.get(0).getAttribute(key);
-      } else if (utils.isObject(key)) {
+      } else if (isObject(key)) {
         attr = key;
       }
 
@@ -387,7 +383,7 @@ function () {
   }, {
     key: "css",
     value: function css(attr, value) {
-      if (utils.isString(attr)) {
+      if (isString(attr)) {
         return this.forEach(function (e) {
           if (attr in e.style) e.style[attr] = String(value);
         });
@@ -436,7 +432,7 @@ function () {
     value: function find(str) {
       var out = [];
       this.forEach(function (e) {
-        out = out.concat(utils.slice.call(e.querySelectorAll(str)));
+        out = out.concat(slice.call(e.querySelectorAll(str)));
       });
       return new Html(out);
     }
@@ -497,7 +493,7 @@ function () {
           if (e.delegateTarget) return;
 
           for (; node && node != root; node = node.parentNode) {
-            if (node && utils.matches(node, selector)) {
+            if (node && matches(node, selector)) {
               e.delegateTarget = node;
               listener(e);
             }
@@ -559,11 +555,4 @@ function html(query, context) {
 
 //export * from './bindable-view';
 
-exports.getValue = getValue;
-exports.setValue = setValue;
-exports.html = html;
-exports.Html = Html;
-
-Object.defineProperty(exports, '__esModule', { value: true });
-
-})));
+export { getValue, setValue, html, Html };

@@ -48,9 +48,11 @@ export declare class Html implements Iterable<Element> {
     css(attr: string | CSSStyleDeclarationOptions, value?: any): Html;
     parent(): Html;
     remove(): Html;
+    focus(): Html;
     clone(): Html;
     find(str: string): Html;
     map<T>(fn: (elm: HTMLElement, index?: number) => T): T[];
+    filter(predicate: (elm: HTMLElement, index?: number) => boolean): Html;
     forEach(fn: (elm: HTMLElement, index: number) => void): Html;
     on(name: string, callback: DomEventHandler, useCap?: boolean | EventListenerOptions, ctx?: any): Html;
     once(name: string, callback: (e: Event) => void, useCap?: boolean | EventListenerOptions, ctx?: any): Html;
