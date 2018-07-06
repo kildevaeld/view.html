@@ -557,12 +557,13 @@ function html(query, context) {
   return Html.query(query, context);
 }
 
-//export * from './bindable-view';
-
 exports.getValue = getValue;
 exports.setValue = setValue;
 exports.html = html;
 exports.Html = Html;
+exports.unbubblebles = unbubblebles;
+exports.addEventListener = addEventListener;
+exports.removeEventListener = removeEventListener;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 

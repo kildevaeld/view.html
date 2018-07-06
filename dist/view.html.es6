@@ -553,6 +553,4 @@ function html(query, context) {
   return Html.query(query, context);
 }
 
-//export * from './bindable-view';
-
-export { getValue, setValue, html, Html };
+export { getValue, setValue, html, Html, unbubblebles, addEventListener, removeEventListener };

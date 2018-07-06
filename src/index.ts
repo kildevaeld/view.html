@@ -1,2 +1,3 @@
-//export * from './bindable-view';
 export * from './html';
+export * from './types';
+export * from './events';
